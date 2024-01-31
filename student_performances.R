@@ -36,13 +36,13 @@ performance_levels <- c("Below average", "Average", "Good", "Excellent")
 #change column types
 student_performances <- student_performances |> 
   mutate(
-    gender = factor(gender),
+    gender = factor(gender, ordered = FALSE),
     academic_performance = factor(academic_performance, levels = performance_levels, ordered = TRUE),
     taking_note_in_class = factor(taking_note_in_class, levels = yes_no_levels, ordered = TRUE),
     depression_status = factor(depression_status, levels = yes_no_levels, ordered = TRUE),
     face_challenges_to_complete_academic_task = factor(face_challenges_to_complete_academic_task, levels = yes_no_levels, ordered = TRUE),
-    like_new_things = factor(like_new_things, levels = yes_no_levels, ordered = TRUE),
-    like_presentation = factor(like_presentation, levels = yes_no_levels, ordered = TRUE)
+    like_new_things = factor(like_new_things, levels = yes_no_levels, ordered = FALSE),
+    like_presentation = factor(like_presentation, levels = yes_no_levels, ordered = FALSE)
   )
 glimpse(student_performances)
 
@@ -50,3 +50,27 @@ glimpse(student_performances)
 sort(student_performances$academic_performance)
 sort(student_performances$depression_status)
 
+##exploratory data analysis
+#distribution of gender
+student_performances |> 
+  group_by(gender) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = gender)) +
+  geom_bar() 
+
+#distribution of academic performance
+student_performances |> 
+  group_by(academic_performance) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = academic_performance)) +
+  geom_bar()
+
+#distribution of academic performance
+student_performances |> 
+  group_by(academic_performance) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = academic_performance)) +
+  geom_bar()
