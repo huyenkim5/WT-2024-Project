@@ -51,7 +51,7 @@ sort(student_performances$academic_performance)
 sort(student_performances$depression_status)
 
 ##exploratory data analysis
-#distribution of gender
+#distribution of gender: 43 females, 56 males
 student_performances |> 
   group_by(gender) |> 
   summarize(n=n())
@@ -59,7 +59,7 @@ student_performances |>
 ggplot(student_performances, aes(x = gender)) +
   geom_bar() 
 
-#distribution of academic performance
+#distribution of academic performance: mostly average and good
 student_performances |> 
   group_by(academic_performance) |> 
   summarize(n=n())
@@ -67,10 +67,72 @@ student_performances |>
 ggplot(student_performances, aes(x = academic_performance)) +
   geom_bar()
 
-#distribution of academic performance
+
+#distribution of note taking: yes > sometimes > no
 student_performances |> 
-  group_by(academic_performance) |> 
+  group_by(taking_note_in_class) |> 
   summarize(n=n())
 
-ggplot(student_performances, aes(x = academic_performance)) +
+ggplot(student_performances, aes(x = taking_note_in_class)) +
   geom_bar()
+
+#distribution of depression status: sometimes > yes > no
+student_performances |> 
+  group_by(depression_status) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = depression_status)) +
+  geom_bar()
+
+
+#distribution of academic challenges: yes > no = sometimes (not much difference)
+student_performances |> 
+  group_by(face_challenges_to_complete_academic_task) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = face_challenges_to_complete_academic_task)) +
+  geom_bar()
+
+#distribution of like presentation: yes > no (double)
+student_performances |> 
+  group_by(like_presentation) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = like_presentation)) +
+  geom_bar()
+
+#distribution of like new things: mostly yes
+student_performances |> 
+  group_by(like_new_things) |> 
+  summarize(n=n())
+
+ggplot(student_performances, aes(x = like_new_things)) +
+  geom_bar()
+
+#distribution of sleep hours: positive skew
+student_performances |> 
+  summarize(
+    mean = mean(sleep_per_day_hours),
+    median = median(sleep_per_day_hours),
+    min = min(sleep_per_day_hours),
+    max = max(sleep_per_day_hours),
+    sd = sd(sleep_per_day_hours)
+  ) 
+
+ggplot(student_performances, aes(x = sleep_per_day_hours)) +
+  geom_histogram()
+
+#distribution of number of friends: positive skew: most ppl have < 25 friends
+student_performances |> 
+  summarize(
+    mean = mean(number_of_friend, na.rm = TRUE),
+    median = median(number_of_friend, na.rm = TRUE),
+    min = min(number_of_friend, na.rm = TRUE),
+    max = max(number_of_friend, na.rm = TRUE),
+    sd = sd(number_of_friend, na.rm = TRUE)
+  ) 
+
+ggplot(student_performances, aes(x = number_of_friend)) +
+  geom_histogram(binwidth = 25, na.rm = TRUE)
+
+       
