@@ -1,6 +1,9 @@
 #load packages
 library(tidyverse)
 library(ggplot2)
+library(dplyr)
+library(broom)
+library(ggpubr)
 
 #read file
 student_performances <- read_csv("data/CSE_student_performances.csv")
@@ -110,29 +113,65 @@ ggplot(student_performances, aes(x = like_new_things)) +
   geom_bar()
 
 #distribution of sleep hours: positive skew
-student_performances |> 
-  summarize(
-    mean = mean(sleep_per_day_hours),
-    median = median(sleep_per_day_hours),
-    min = min(sleep_per_day_hours),
-    max = max(sleep_per_day_hours),
-    sd = sd(sleep_per_day_hours)
-  ) 
+summary(student_performances$sleep_per_day_hours)
 
 ggplot(student_performances, aes(x = sleep_per_day_hours)) +
   geom_histogram()
 
 #distribution of number of friends: positive skew: most ppl have < 25 friends
-student_performances |> 
-  summarize(
-    mean = mean(number_of_friend, na.rm = TRUE),
-    median = median(number_of_friend, na.rm = TRUE),
-    min = min(number_of_friend, na.rm = TRUE),
-    max = max(number_of_friend, na.rm = TRUE),
-    sd = sd(number_of_friend, na.rm = TRUE)
-  ) 
+summary(student_performances$number_of_friend)
 
 ggplot(student_performances, aes(x = number_of_friend)) +
   geom_histogram(binwidth = 25, na.rm = TRUE)
 
-       
+
+#recode academic performance into a numeric variable
+student_performances <- student_performances |> 
+  mutate(
+  numeric_academic_performance = recode(academic_performance,
+                                      "Below average" = "1",
+                                      "Average" = "2",
+                                      "Good" = "3",
+                                      "Excellent" = "4"),
+  numeric_academic_performance = as.numeric(numeric_academic_performance)
+)
+student_performances
+#regression: sleep and academic performance: no significant relationship
+ggplot(student_performances, aes(x = sleep_per_day_hours, y = numeric_academic_performance, color = gender))+
+  geom_point(position = "jitter")
+
+sleep_performance_lm <- lm(numeric_academic_performance ~ sleep_per_day_hours, data = student_performances)
+summary(sleep_performance_lm) #not significant
+
+#anova: depression - academic performance: no relationship
+depression_academic_aov <- aov(numeric_academic_performance ~ depression_status, data = student_performances)
+summary(depression_academic_aov) #not significant
+
+#remove outlier for number of friend (values > 25)
+student_performances_friend_outlier <- student_performances |> 
+  filter(number_of_friend <= 25)
+student_performances_friend_outlier
+
+#anova: depression status & number of friends
+#students who are depressed have significantly less friends than students who are sometimes or not depressed.
+ggplot(student_performances_friend_outlier, aes(x = depression_status, y = number_of_friend))+
+  geom_boxplot()
+
+depression_friend_aov <- aov(number_of_friend ~ depression_status, data = student_performances_friend_outlier)
+summary(depression_friend_aov) #significant
+
+#post-hoc: paired comparisons (t-test)
+sometimes_depressed <- student_performances_friend_outlier |> 
+  filter(depression_status == "Sometimes") |> 
+  select(number_of_friend)
+yes_depressed <- student_performances_friend_outlier |> 
+  filter(depression_status == "Yes") |> 
+  select(number_of_friend)
+no_depressed <- student_performances_friend_outlier |> 
+  filter(depression_status == "No") |> 
+  select(number_of_friend)
+
+t.test(sometimes_depressed, yes_depressed, var.equal = TRUE) #significant
+t.test(sometimes_depressed, no_depressed, var.equal = TRUE) #not significant
+t.test(no_depressed, yes_depressed, var.equal = TRUE) #significant
+
